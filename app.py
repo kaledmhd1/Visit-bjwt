@@ -1,5 +1,8 @@
-from flask import Flask, request, jsonify import httpx from Crypto.Cipher import AES from Crypto.Util.Padding import pad import base64
-
+from flask import Flask, request, jsonify
+import httpx
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
+import base64
 app = Flask(name)
 
 x = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0a", "0b", "0c", "0d", "0e", "0f"] dec = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0a", "0b", "0c", "0d", "0e", "0f"]
