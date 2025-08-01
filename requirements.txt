@@ -1,5 +1,6 @@
 Flask
 httpx
+fastapi
 pycryptodome
 protobuf_decoder
 gunicorn
