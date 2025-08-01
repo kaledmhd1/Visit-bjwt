@@ -1,33 +1,27 @@
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 import httpx
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad
-import base64
 from byte import encrypt_api, Encrypt_ID
 
-app = Flask(__name__)
+app = FastAPI()
 
-@app.route("/visit_profile", methods=["GET"])
-def visit_profile():
-    player_id = request.args.get("player_id")
-    token = request.args.get("token")
+@app.get("/visit_profile")
+async def visit_profile(request: Request):
+    player_id = request.query_params.get("player_id")
+    token = request.query_params.get("token")
 
     if not player_id or not token:
-        return jsonify({"error": "player_id and token are required in query params"}), 400
+        return JSONResponse({"error": "player_id and token are required"}, status_code=400)
 
     try:
         player_id = int(player_id)
     except ValueError:
-        return jsonify({"error": "player_id must be an integer"}), 400
+        return JSONResponse({"error": "player_id must be an integer"}, status_code=400)
 
-    try:
-        encrypted_id = Encrypt_ID(player_id)
-        encrypted_api = encrypt_api(f"08{encrypted_id}1007")
-        TARGET = bytes.fromhex(encrypted_api)
-    except Exception as e:
-        return jsonify({"error": f"Encryption failed: {str(e)}"}), 500
+    encrypted_id = Encrypt_ID(player_id)
+    encrypted_api = encrypt_api(f"08{encrypted_id}1007")
+    TARGET = bytes.fromhex(encrypted_api)
 
-    url = "https://clientbp.common.ggbluefox.com/GetPlayerPersonalShow"
     headers = {
         'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 9; ASUS_Z01QD Build/PI)',
         'Connection': 'Keep-Alive',
@@ -40,26 +34,15 @@ def visit_profile():
     }
 
     try:
-        with httpx.Client(verify=False) as client:
-            response = client.post(url, headers=headers, data=TARGET)
-
+        async with httpx.AsyncClient(verify=False) as client:
+            response = await client.post(
+                "https://clientbp.common.ggbluefox.com/GetPlayerPersonalShow",
+                headers=headers,
+                content=TARGET
+            )
         if response.status_code == 200:
-            return jsonify({
-                "status": "success",
-                "message": f"[{player_id}] ✅ زيارة ناجحة"
-            }), 200
+            return {"status": "success", "message": f"[{player_id}] GOOD VISIT✅"}
         else:
-            return jsonify({
-                "status": "failed",
-                "message": f"❌ فشل في الزيارة - الكود {response.status_code}"
-            }), response.status_code
-
-    except httpx.RequestError as e:
-        return jsonify({
-            "status": "error",
-            "message": f"Request error: {str(e)}"
-        }), 500
-
-
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+            return {"status": "failed", "message": f"Request failed: {response.status_code}"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
