@@ -1,7 +1,5 @@
 Flask
-pycryptodome
-requests
-protobuf
-PyJWT
-gunicorn
 httpx
+pycryptodome
+protobuf_decoder
+gunicorn
