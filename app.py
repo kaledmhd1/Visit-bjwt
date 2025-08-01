@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 import threading
 
 app = Flask(__name__)
-executor = ThreadPoolExecutor(max_workers=100)  # عدد النوافذ المتوازية
+executor = ThreadPoolExecutor(max_workers=40)  # عدد النوافذ المتوازية
 
 def Encrypt_ID(x):
     x = int(x)
